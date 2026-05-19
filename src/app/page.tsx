@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, BarChart3, RefreshCw, TrendingUp } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -11,19 +17,31 @@ export default function Home() {
             <span className="text-xl font-bold">FlowRev</span>
           </div>
           <nav className="flex items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              ダッシュボード
-            </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              はじめる
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                ダッシュボード
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  ログイン
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  はじめる
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -41,10 +59,10 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/dashboard"
+                href={user ? "/dashboard" : "/signup"}
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-base font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
               >
-                ダッシュボードへ
+                {user ? "ダッシュボードへ" : "無料ではじめる"}
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <a
