@@ -6,6 +6,7 @@ import { ReportSummaryCards } from "./report-summary-cards";
 import { ReportCategoryTable } from "./report-category-table";
 import { CustomerRankingTable } from "./customer-ranking-table";
 import { ReportCsvButton } from "./report-csv-button";
+import { ReportPdfButton } from "./report-pdf-button";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import type { ReportData, ReportFilters } from "@/types/report";
 
@@ -46,11 +47,14 @@ export function ReportsClient({ initialData, initialFilters }: ReportsClientProp
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+      <div className="flex items-start justify-between gap-4 flex-wrap" data-print-hide>
         <div className="flex-1 min-w-0">
           <ReportFilterBar filters={filters} onChange={handleFilterChange} />
         </div>
-        <ReportCsvButton dateFrom={filters.dateFrom} dateTo={filters.dateTo} />
+        <div className="flex gap-2 shrink-0">
+          <ReportCsvButton dateFrom={filters.dateFrom} dateTo={filters.dateTo} />
+          <ReportPdfButton />
+        </div>
       </div>
 
       <div className={loading ? "opacity-60 pointer-events-none" : ""}>

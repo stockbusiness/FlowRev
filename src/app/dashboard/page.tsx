@@ -5,6 +5,7 @@ import { StatsGrid } from "@/components/dashboard/stats-cards";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { ExpenseChart } from "@/components/dashboard/expense-chart";
 import { PeriodFilter } from "@/components/dashboard/period-filter";
+import { DashboardAlerts } from "@/components/dashboard/dashboard-alerts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -76,6 +77,11 @@ async function DefaultDashboard() {
             <PeriodFilter currentPreset="this_month" />
           </Suspense>
         </div>
+        <DashboardAlerts
+          revenue={dbStats.currentRevenue}
+          expense={dbStats.currentExpense}
+          transactionCount={dbStats.currentRevenue + dbStats.currentExpense > 0 ? 1 : 0}
+        />
         <StatsGrid stats={stats} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <RevenueChart data={monthlyData} />
@@ -132,6 +138,11 @@ async function FilteredDashboard({
             <PeriodFilter currentPreset={preset} />
           </Suspense>
         </div>
+        <DashboardAlerts
+          revenue={summary.revenue}
+          expense={summary.expense}
+          transactionCount={summary.transactionCount}
+        />
         <StatsGrid stats={stats} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <RevenueChart data={monthly} />

@@ -67,3 +67,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  aside,
+  header,
+  [data-print-hide] {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  main {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  .recharts-wrapper {
+    page-break-inside: avoid;
+  }
+}

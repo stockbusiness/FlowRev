@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { TransactionList } from "./transaction-list";
 import { TransactionForm } from "./transaction-form";
 import { TransactionFilterBar, INITIAL_FILTERS } from "./transaction-filter-bar";
 import type { TransactionFilterState } from "./transaction-filter-bar";
 import type { Category, Customer, TransactionWithRelations } from "@/types";
 import type { TransactionFormValues } from "@/types/transaction";
+
+const PER_PAGE = 20;
 
 interface TransactionsClientProps {
   initialTransactions: TransactionWithRelations[];
@@ -23,9 +26,10 @@ export function TransactionsClient({
 }: TransactionsClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [showForm, setShowForm]   = useState(false);
-  const [editing, setEditing]     = useState<TransactionWithRelations | null>(null);
-  const [filters, setFilters]     = useState<TransactionFilterState>(INITIAL_FILTERS);
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing]   = useState<TransactionWithRelations | null>(null);
+  const [filters, setFilters]   = useState<TransactionFilterState>(INITIAL_FILTERS);
+  const [page, setPage]         = useState(1);
 
   const filtered = useMemo(() => {
     return initialTransactions.filter((t) => {
@@ -41,6 +45,12 @@ export function TransactionsClient({
       return true;
     });
   }, [initialTransactions, filters]);
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paginated  = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  // フィルター変更時はページを1に戻す
+  useEffect(() => { setPage(1); }, [filters]);
 
   function openNew()   { setEditing(null); setShowForm(true); }
   function closeForm() { setShowForm(false); setEditing(null); }
@@ -123,12 +133,14 @@ export function TransactionsClient({
       <Card className={isPending ? "opacity-60" : ""}>
         <CardContent className="p-0">
           <TransactionList
-            transactions={filtered}
+            transactions={paginated}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
         </CardContent>
       </Card>
+
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} className="py-2" />
     </div>
   );
 }
