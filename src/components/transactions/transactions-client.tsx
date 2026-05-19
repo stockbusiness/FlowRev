@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TransactionList } from "./transaction-list";
 import { TransactionForm } from "./transaction-form";
+import { TransactionFilterBar, INITIAL_FILTERS } from "./transaction-filter-bar";
+import type { TransactionFilterState } from "./transaction-filter-bar";
 import type { Category, Customer, TransactionWithRelations } from "@/types";
 import type { TransactionFormValues } from "@/types/transaction";
 
@@ -23,8 +25,24 @@ export function TransactionsClient({
   const [isPending, startTransition] = useTransition();
   const [showForm, setShowForm]   = useState(false);
   const [editing, setEditing]     = useState<TransactionWithRelations | null>(null);
+  const [filters, setFilters]     = useState<TransactionFilterState>(INITIAL_FILTERS);
 
-  function openNew()  { setEditing(null); setShowForm(true); }
+  const filtered = useMemo(() => {
+    return initialTransactions.filter((t) => {
+      if (filters.type !== "all" && t.type !== filters.type) return false;
+      if (filters.dateFrom && t.date < filters.dateFrom) return false;
+      if (filters.dateTo   && t.date > filters.dateTo)   return false;
+      if (filters.keyword) {
+        const kw = filters.keyword.toLowerCase();
+        const inDesc     = t.description.toLowerCase().includes(kw);
+        const inCustomer = t.customer?.name.toLowerCase().includes(kw) ?? false;
+        if (!inDesc && !inCustomer) return false;
+      }
+      return true;
+    });
+  }, [initialTransactions, filters]);
+
+  function openNew()   { setEditing(null); setShowForm(true); }
   function closeForm() { setShowForm(false); setEditing(null); }
 
   function handleEdit(t: TransactionWithRelations) {
@@ -60,7 +78,6 @@ export function TransactionsClient({
 
   async function handleDelete(id: string) {
     if (!confirm("この取引を削除しますか？")) return;
-
     await fetch(`/api/transactions/${id}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
@@ -76,6 +93,13 @@ export function TransactionsClient({
           新規登録
         </Button>
       </div>
+
+      <TransactionFilterBar
+        filters={filters}
+        onChange={setFilters}
+        resultCount={filtered.length}
+        totalCount={initialTransactions.length}
+      />
 
       {showForm && (
         <Card>
@@ -99,7 +123,7 @@ export function TransactionsClient({
       <Card className={isPending ? "opacity-60" : ""}>
         <CardContent className="p-0">
           <TransactionList
-            transactions={initialTransactions}
+            transactions={filtered}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
