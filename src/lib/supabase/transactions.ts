@@ -2,6 +2,7 @@ import { createClient } from "./server";
 import type { TransactionInsert, TransactionUpdate, TransactionWithRelations } from "@/types";
 import type { TransactionFilters } from "@/types/transaction";
 export { getCategories } from "./categories";
+export { getCustomers } from "./customers";
 
 export async function getTransactions(
   filters?: TransactionFilters
@@ -67,14 +68,3 @@ export async function deleteTransaction(id: string) {
   if (error) throw new Error(error.message);
 }
 
-export async function getCustomers() {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("customers")
-    .select("id, name")
-    .order("name");
-
-  if (error) throw new Error(error.message);
-  return data ?? [];
-}

@@ -9,7 +9,24 @@ export async function GET(request: NextRequest) {
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
+
     if (!error) {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        // カテゴリが0件のユーザーにデフォルトカテゴリを挿入
+        const { count } = await supabase
+          .from("categories")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
+        if (count === 0) {
+          await supabase.rpc("insert_default_categories", {
+            p_user_id: user.id,
+          });
+        }
+      }
+
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { ArrowLeftRight, BarChart3, Home, RefreshCw, Settings, Tag, TrendingUp } from "lucide-react";
+import { ArrowLeftRight, BarChart3, Building2, Home, RefreshCw, Settings, Tag, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard",              label: "概要",        icon: Home },
   { href: "/dashboard/transactions", label: "取引管理",    icon: ArrowLeftRight },
   { href: "/dashboard/categories",   label: "カテゴリ管理", icon: Tag },
+  { href: "/dashboard/customers",    label: "顧客管理",    icon: Building2 },
   { href: "/dashboard/analytics",    label: "収益分析",    icon: BarChart3 },
   { href: "/dashboard/flows",        label: "フロー管理",  icon: RefreshCw },
   { href: "/dashboard/reports",      label: "レポート",    icon: TrendingUp },
