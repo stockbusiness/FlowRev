@@ -2,9 +2,10 @@ import { Mail, Pencil, Phone, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Customer } from "@/types";
+import type { CustomerWithStats } from "@/types/customer";
 
 interface CustomerListProps {
-  customers: Customer[];
+  customers: CustomerWithStats[];
   onEdit: (c: Customer) => void;
   onDelete: (id: string) => void;
 }
@@ -25,6 +26,8 @@ export function CustomerList({ customers, onEdit, onDelete }: CustomerListProps)
           <TableHead>顧客名</TableHead>
           <TableHead>メール</TableHead>
           <TableHead>電話番号</TableHead>
+          <TableHead className="text-right">取引件数</TableHead>
+          <TableHead className="text-right">合計売上</TableHead>
           <TableHead>備考</TableHead>
           <TableHead className="w-20" />
         </TableRow>
@@ -53,7 +56,23 @@ export function CustomerList({ customers, onEdit, onDelete }: CustomerListProps)
                 <span className="text-muted-foreground text-sm">—</span>
               )}
             </TableCell>
-            <TableCell className="max-w-[200px] truncate text-sm text-muted-foreground">
+            <TableCell className="text-right text-sm">
+              {c.transaction_count > 0 ? (
+                <span className="font-medium">{c.transaction_count}</span>
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
+            </TableCell>
+            <TableCell className="text-right text-sm whitespace-nowrap">
+              {c.total_revenue > 0 ? (
+                <span className="font-medium text-emerald-600">
+                  ¥{c.total_revenue.toLocaleString()}
+                </span>
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
+            </TableCell>
+            <TableCell className="max-w-[160px] truncate text-sm text-muted-foreground">
               {c.notes ?? "—"}
             </TableCell>
             <TableCell>

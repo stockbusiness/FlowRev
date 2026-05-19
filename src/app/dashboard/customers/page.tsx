@@ -1,9 +1,9 @@
 import { Header } from "@/components/layout/header";
 import { CustomersClient } from "@/components/customers/customers-client";
-import { getCustomers } from "@/lib/supabase/customers";
+import { getCustomersWithStats } from "@/lib/supabase/customers";
 
 export default async function CustomersPage() {
-  const customers = await getCustomers();
+  const customers = await getCustomersWithStats();
 
   return (
     <>

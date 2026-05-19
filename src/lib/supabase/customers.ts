@@ -1,5 +1,6 @@
 import { createClient } from "./server";
 import type { Customer, CustomerInsert } from "@/types";
+import type { CustomerWithStats } from "@/types/customer";
 
 type CustomerUpdate = {
   name?: string;
@@ -18,6 +19,34 @@ export async function getCustomers(): Promise<Customer[]> {
 
   if (error) throw new Error(error.message);
   return data ?? [];
+}
+
+export async function getCustomersWithStats(): Promise<CustomerWithStats[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("customers")
+    .select(`
+      *,
+      stats:customer_stats!customer_stats_customer_id_fkey(
+        transaction_count,
+        total_revenue,
+        total_expense
+      )
+    `)
+    .order("name");
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((row) => {
+    const s = Array.isArray(row.stats) ? row.stats[0] : row.stats;
+    return {
+      ...row,
+      transaction_count: s?.transaction_count ?? 0,
+      total_revenue:     s?.total_revenue     ?? 0,
+      total_expense:     s?.total_expense     ?? 0,
+    } as CustomerWithStats;
+  });
 }
 
 export async function createCustomer(
