@@ -1,0 +1,39 @@
+import Link from "next/link";
+import { BarChart3, Home, RefreshCw, Settings, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const navItems = [
+  { href: "/dashboard", label: "概要", icon: Home },
+  { href: "/dashboard/analytics", label: "収益分析", icon: BarChart3 },
+  { href: "/dashboard/flows", label: "フロー管理", icon: RefreshCw },
+  { href: "/dashboard/reports", label: "レポート", icon: TrendingUp },
+  { href: "/dashboard/settings", label: "設定", icon: Settings },
+];
+
+export function Sidebar() {
+  return (
+    <aside className="w-64 shrink-0 border-r bg-card h-full flex flex-col">
+      <div className="h-16 flex items-center px-6 border-b">
+        <Link href="/" className="flex items-center gap-2">
+          <RefreshCw className="h-5 w-5 text-primary" />
+          <span className="font-bold">FlowRev</span>
+        </Link>
+      </div>
+      <nav className="flex-1 px-3 py-4 space-y-1">
+        {navItems.map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "text-muted-foreground hover:text-foreground hover:bg-accent"
+            )}
+          >
+            <Icon className="h-4 w-4" />
+            {label}
+          </Link>
+        ))}
+      </nav>
+    </aside>
+  );
+}
