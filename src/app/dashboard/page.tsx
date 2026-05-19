@@ -1,42 +1,79 @@
-import { DollarSign, TrendingUp, Users, ArrowDown } from "lucide-react";
+import { DollarSign, TrendingUp, Users, ArrowDown, type LucideIcon } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { StatsGrid } from "@/components/dashboard/stats-cards";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { ExpenseChart } from "@/components/dashboard/expense-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  getDashboardStats,
+  getMonthlyChartData,
+  getExpenseChartData,
+  getRecentTransactions,
+} from "@/lib/supabase/dashboard";
 
-const stats = [
-  { label: "月次売上",    value: "¥4,820,000", change: "+12.5%", trend: "up"   as const, icon: DollarSign },
-  { label: "純利益",      value: "¥1,240,000", change: "+8.2%",  trend: "up"   as const, icon: TrendingUp },
-  { label: "アクティブ顧客", value: "248",      change: "+4.1%",  trend: "up"   as const, icon: Users },
-  { label: "費用合計",    value: "¥3,580,000", change: "-2.3%",  trend: "down" as const, icon: ArrowDown },
-];
+function calcChange(current: number, prev: number): { label: string; trend: "up" | "down" } {
+  if (prev === 0) return { label: current > 0 ? "+100%" : "0%", trend: "up" };
+  const pct = ((current - prev) / prev) * 100;
+  const sign = pct >= 0 ? "+" : "";
+  return { label: `${sign}${pct.toFixed(1)}%`, trend: pct >= 0 ? "up" : "down" };
+}
 
-const monthlyData = [
-  { month: "12月", revenue: 3800000, expense: 2900000 },
-  { month: "1月",  revenue: 4100000, expense: 3100000 },
-  { month: "2月",  revenue: 3950000, expense: 3000000 },
-  { month: "3月",  revenue: 4300000, expense: 3200000 },
-  { month: "4月",  revenue: 4600000, expense: 3400000 },
-  { month: "5月",  revenue: 4820000, expense: 3580000 },
-];
+function formatYen(n: number) {
+  return `¥${n.toLocaleString("ja-JP")}`;
+}
 
-const expenseData = [
-  { name: "人件費",   value: 1800000, color: "#ef4444" },
-  { name: "家賃",     value: 600000,  color: "#f97316" },
-  { name: "広告費",   value: 480000,  color: "#eab308" },
-  { name: "消耗品費", value: 420000,  color: "#6b7280" },
-  { name: "その他",   value: 280000,  color: "#9ca3af" },
-];
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("ja-JP", {
+    month: "2-digit", day: "2-digit",
+  });
+}
 
-const recentActivity = [
-  { text: "新規契約：株式会社サンプル A", time: "2時間前" },
-  { text: "請求書発行 #INV-0042",       time: "5時間前" },
-  { text: "入金確認 ¥320,000",          time: "昨日" },
-  { text: "費用登録：オフィス賃料",      time: "昨日" },
-];
+export default async function DashboardPage() {
+  const [dbStats, monthlyData, expenseData, recentTransactions] =
+    await Promise.all([
+      getDashboardStats(),
+      getMonthlyChartData(),
+      getExpenseChartData(),
+      getRecentTransactions(),
+    ]);
 
-export default function DashboardPage() {
+  const revenueChange  = calcChange(dbStats.currentRevenue,  dbStats.prevRevenue);
+  const profitChange   = calcChange(dbStats.currentProfit,   dbStats.prevProfit);
+  const expenseChange  = calcChange(dbStats.currentExpense,  dbStats.prevExpense);
+  const customerChange = calcChange(dbStats.activeCustomers, dbStats.prevCustomers);
+
+  const stats: { label: string; value: string; change: string; trend: "up" | "down"; icon: LucideIcon }[] = [
+    {
+      label: "月次売上",
+      value: formatYen(dbStats.currentRevenue),
+      change: revenueChange.label,
+      trend:  revenueChange.trend,
+      icon:   DollarSign,
+    },
+    {
+      label: "純利益",
+      value: formatYen(dbStats.currentProfit),
+      change: profitChange.label,
+      trend:  profitChange.trend,
+      icon:   TrendingUp,
+    },
+    {
+      label: "アクティブ顧客",
+      value: String(dbStats.activeCustomers),
+      change: customerChange.label,
+      trend:  customerChange.trend,
+      icon:   Users,
+    },
+    {
+      label: "費用合計",
+      value: formatYen(dbStats.currentExpense),
+      change: expenseChange.label,
+      trend:  expenseChange.trend === "up" ? "down" : "up",
+      icon:   ArrowDown,
+    },
+  ];
+
   return (
     <>
       <Header title="ダッシュボード" />
@@ -51,16 +88,32 @@ export default function DashboardPage() {
             <CardTitle className="text-base">最近のアクティビティ</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="divide-y">
-              {recentActivity.map((item, i) => (
-                <div key={i} className="flex items-center justify-between py-3">
-                  <span className="text-sm">{item.text}</span>
-                  <span className="text-xs text-muted-foreground shrink-0 ml-4">
-                    {item.time}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {recentTransactions.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">
+                取引データがありません
+              </p>
+            ) : (
+              <div className="divide-y">
+                {recentTransactions.map((t) => (
+                  <div key={t.id} className="flex items-center justify-between py-3 gap-4">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Badge variant={t.type === "revenue" ? "default" : "destructive"} className="shrink-0">
+                        {t.type === "revenue" ? "収益" : "費用"}
+                      </Badge>
+                      <span className="text-sm truncate">{t.description}</span>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className={`text-sm font-medium ${t.type === "revenue" ? "text-emerald-600" : "text-rose-600"}`}>
+                        {t.type === "revenue" ? "+" : "-"}{formatYen(t.amount)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(t.date)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
