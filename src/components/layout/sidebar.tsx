@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeftRight, BarChart3, Building2, Home, RefreshCw, Settings, Tag, TrendingUp } from "lucide-react";
+import { ArrowLeftRight, BarChart3, Building2, Home, RefreshCw, Settings, Tag, TrendingUp, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { href: "/dashboard/customers",    label: "顧客管理",    icon: Building2 },
   { href: "/dashboard/reports",      label: "レポート",    icon: TrendingUp },
   { href: "/dashboard/analytics",    label: "収益分析",    icon: BarChart3 },
+  { href: "/dashboard/budgets",      label: "予算管理",    icon: Wallet },
   { href: "/dashboard/settings",     label: "設定",        icon: Settings },
 ];
 

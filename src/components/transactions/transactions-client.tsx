@@ -2,13 +2,14 @@
 
 import { useState, useTransition, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { TransactionList } from "./transaction-list";
 import { TransactionForm } from "./transaction-form";
 import { TransactionFilterBar, INITIAL_FILTERS } from "./transaction-filter-bar";
+import { TransactionImport } from "./transaction-import";
 import type { TransactionFilterState } from "./transaction-filter-bar";
 import type { Category, Customer, TransactionWithRelations } from "@/types";
 import type { TransactionFormValues } from "@/types/transaction";
@@ -26,10 +27,11 @@ export function TransactionsClient({
 }: TransactionsClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing]   = useState<TransactionWithRelations | null>(null);
-  const [filters, setFilters]   = useState<TransactionFilterState>(INITIAL_FILTERS);
-  const [page, setPage]         = useState(1);
+  const [showForm, setShowForm]     = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [editing, setEditing]       = useState<TransactionWithRelations | null>(null);
+  const [filters, setFilters]       = useState<TransactionFilterState>(INITIAL_FILTERS);
+  const [page, setPage]             = useState(1);
 
   const filtered = useMemo(() => {
     return initialTransactions.filter((t) => {
@@ -98,10 +100,16 @@ export function TransactionsClient({
         <h2 className="text-sm text-muted-foreground">
           {initialTransactions.length} 件の取引
         </h2>
-        <Button onClick={openNew} size="sm">
-          <Plus className="h-4 w-4" />
-          新規登録
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => { setShowImport((v) => !v); setShowForm(false); }}>
+            <Upload className="h-4 w-4" />
+            CSVインポート
+          </Button>
+          <Button onClick={openNew} size="sm">
+            <Plus className="h-4 w-4" />
+            新規登録
+          </Button>
+        </div>
       </div>
 
       <TransactionFilterBar
@@ -110,6 +118,14 @@ export function TransactionsClient({
         resultCount={filtered.length}
         totalCount={initialTransactions.length}
       />
+
+      {showImport && (
+        <TransactionImport
+          categories={categories}
+          onClose={() => setShowImport(false)}
+          onComplete={() => { setShowImport(false); startTransition(() => router.refresh()); }}
+        />
+      )}
 
       {showForm && (
         <Card>
