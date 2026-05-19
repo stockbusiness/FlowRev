@@ -2,19 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeftRight, BarChart3, Building2, FileText, Home, RefreshCw, Settings, Tag, TrendingUp, Wallet } from "lucide-react";
+import { ArrowLeftRight, BarChart3, BookOpen, Building2, FileText, Home, RefreshCw, Settings, Tag, TrendingUp, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/dashboard",              label: "概要",        icon: Home },
-  { href: "/dashboard/transactions", label: "取引管理",    icon: ArrowLeftRight },
-  { href: "/dashboard/categories",   label: "カテゴリ管理", icon: Tag },
-  { href: "/dashboard/customers",    label: "顧客管理",    icon: Building2 },
-  { href: "/dashboard/reports",      label: "レポート",    icon: TrendingUp },
-  { href: "/dashboard/analytics",    label: "収益分析",    icon: BarChart3 },
-  { href: "/dashboard/budgets",      label: "予算管理",    icon: Wallet },
-  { href: "/dashboard/invoices",     label: "請求書",      icon: FileText },
-  { href: "/dashboard/settings",     label: "設定",        icon: Settings },
+  { href: "/dashboard",              label: "概要",          icon: Home },
+  { href: "/dashboard/products",     label: "商品・講座管理", icon: BookOpen },
+  { href: "/dashboard/customers",    label: "顧客管理",       icon: Building2 },
+  { href: "/dashboard/transactions", label: "取引管理",       icon: ArrowLeftRight },
+  { href: "/dashboard/categories",   label: "カテゴリ管理",   icon: Tag },
+  { href: "/dashboard/reports",      label: "レポート",       icon: TrendingUp },
+  { href: "/dashboard/analytics",    label: "収益分析",       icon: BarChart3 },
+  { href: "/dashboard/budgets",      label: "予算管理",       icon: Wallet },
+  { href: "/dashboard/invoices",     label: "請求書",         icon: FileText },
+  { href: "/dashboard/settings",     label: "設定",           icon: Settings },
 ];
 
 export function Sidebar() {
