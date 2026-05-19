@@ -13,6 +13,7 @@ export type TransactionInsert = Database["public"]["Tables"]["transactions"]["In
 export type TransactionUpdate = Database["public"]["Tables"]["transactions"]["Update"];
 
 export type CategoryInsert = Database["public"]["Tables"]["categories"]["Insert"];
+export type CategoryUpdate = Database["public"]["Tables"]["categories"]["Update"];
 export type CustomerInsert = Database["public"]["Tables"]["customers"]["Insert"];
 
 /** transactions に category / customer を JOIN した拡張型 */

@@ -1,6 +1,7 @@
 import { createClient } from "./server";
 import type { TransactionInsert, TransactionUpdate, TransactionWithRelations } from "@/types";
 import type { TransactionFilters } from "@/types/transaction";
+export { getCategories } from "./categories";
 
 export async function getTransactions(
   filters?: TransactionFilters
@@ -64,18 +65,6 @@ export async function deleteTransaction(id: string) {
     .eq("id", id);
 
   if (error) throw new Error(error.message);
-}
-
-export async function getCategories() {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("categories")
-    .select("*")
-    .order("name");
-
-  if (error) throw new Error(error.message);
-  return data ?? [];
 }
 
 export async function getCustomers() {
