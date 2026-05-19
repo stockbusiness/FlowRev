@@ -1,26 +1,32 @@
 -- ============================================================
+-- FlowRev セットアップSQL（既存環境でも安全に実行可能）
+-- ============================================================
+
+-- ============================================================
 -- profiles
 -- ============================================================
 CREATE TABLE IF NOT EXISTS profiles (
-  id          UUID        REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  id           UUID        REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   display_name TEXT,
-  avatar_url  TEXT,
-  created_at  TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-  updated_at  TIMESTAMPTZ DEFAULT NOW() NOT NULL
+  avatar_url   TEXT,
+  created_at   TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  updated_at   TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "profiles: 本人のみ参照" ON profiles;
 CREATE POLICY "profiles: 本人のみ参照"
   ON profiles FOR SELECT USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "profiles: 本人のみ更新" ON profiles;
 CREATE POLICY "profiles: 本人のみ更新"
   ON profiles FOR UPDATE USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "profiles: 本人のみ挿入" ON profiles;
 CREATE POLICY "profiles: 本人のみ挿入"
   ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
--- サインアップ時に自動でprofileを作成するトリガー
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -29,7 +35,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE OR REPLACE TRIGGER on_auth_user_created
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
@@ -47,30 +54,33 @@ CREATE TABLE IF NOT EXISTS categories (
 
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "categories: 本人のみ参照" ON categories;
 CREATE POLICY "categories: 本人のみ参照"
   ON categories FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "categories: 本人のみ挿入" ON categories;
 CREATE POLICY "categories: 本人のみ挿入"
   ON categories FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "categories: 本人のみ更新" ON categories;
 CREATE POLICY "categories: 本人のみ更新"
   ON categories FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "categories: 本人のみ削除" ON categories;
 CREATE POLICY "categories: 本人のみ削除"
   ON categories FOR DELETE USING (auth.uid() = user_id);
 
--- デフォルトカテゴリ挿入用の関数
 CREATE OR REPLACE FUNCTION insert_default_categories(p_user_id UUID)
 RETURNS VOID AS $$
 BEGIN
   INSERT INTO categories (user_id, name, type, color) VALUES
-    (p_user_id, '売上',     'revenue', '#10b981'),
+    (p_user_id, '売上',       'revenue', '#10b981'),
     (p_user_id, '受取手数料', 'revenue', '#3b82f6'),
     (p_user_id, 'その他収入', 'revenue', '#8b5cf6'),
-    (p_user_id, '人件費',   'expense', '#ef4444'),
-    (p_user_id, '家賃',     'expense', '#f97316'),
-    (p_user_id, '広告費',   'expense', '#eab308'),
-    (p_user_id, '消耗品費', 'expense', '#6b7280'),
+    (p_user_id, '人件費',     'expense', '#ef4444'),
+    (p_user_id, '家賃',       'expense', '#f97316'),
+    (p_user_id, '広告費',     'expense', '#eab308'),
+    (p_user_id, '消耗品費',   'expense', '#6b7280'),
     (p_user_id, 'その他費用', 'expense', '#9ca3af');
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -91,15 +101,19 @@ CREATE TABLE IF NOT EXISTS customers (
 
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "customers: 本人のみ参照" ON customers;
 CREATE POLICY "customers: 本人のみ参照"
   ON customers FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "customers: 本人のみ挿入" ON customers;
 CREATE POLICY "customers: 本人のみ挿入"
   ON customers FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "customers: 本人のみ更新" ON customers;
 CREATE POLICY "customers: 本人のみ更新"
   ON customers FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "customers: 本人のみ削除" ON customers;
 CREATE POLICY "customers: 本人のみ削除"
   ON customers FOR DELETE USING (auth.uid() = user_id);
 
@@ -127,19 +141,22 @@ CREATE INDEX IF NOT EXISTS transactions_user_id_type_idx
 
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "transactions: 本人のみ参照" ON transactions;
 CREATE POLICY "transactions: 本人のみ参照"
   ON transactions FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "transactions: 本人のみ挿入" ON transactions;
 CREATE POLICY "transactions: 本人のみ挿入"
   ON transactions FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "transactions: 本人のみ更新" ON transactions;
 CREATE POLICY "transactions: 本人のみ更新"
   ON transactions FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "transactions: 本人のみ削除" ON transactions;
 CREATE POLICY "transactions: 本人のみ削除"
   ON transactions FOR DELETE USING (auth.uid() = user_id);
 
--- updated_at 自動更新トリガー
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -148,18 +165,24 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS set_profiles_updated_at ON profiles;
 CREATE TRIGGER set_profiles_updated_at
   BEFORE UPDATE ON profiles
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+DROP TRIGGER IF EXISTS set_customers_updated_at ON customers;
 CREATE TRIGGER set_customers_updated_at
   BEFORE UPDATE ON customers
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+DROP TRIGGER IF EXISTS set_transactions_updated_at ON transactions;
 CREATE TRIGGER set_transactions_updated_at
   BEFORE UPDATE ON transactions
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
--- 月次合計を返す関数（p_offset=0: 当月, 1: 前月）
+
+-- ============================================================
+-- Dashboard関数
+-- ============================================================
 CREATE OR REPLACE FUNCTION get_monthly_totals(p_offset INT DEFAULT 0)
 RETURNS TABLE(type TEXT, total BIGINT) AS $$
 DECLARE
@@ -179,7 +202,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
--- 直近6ヶ月の月次チャートデータ
 CREATE OR REPLACE FUNCTION get_monthly_chart_data()
 RETURNS TABLE(month TEXT, revenue BIGINT, expense BIGINT) AS $$
 BEGIN
@@ -195,7 +217,10 @@ BEGIN
   ORDER BY date_trunc('month', t.date);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
--- プロフィール作成時にデフォルトカテゴリを自動挿入するトリガー
+
+-- ============================================================
+-- プロフィール作成時のデフォルトカテゴリ自動挿入
+-- ============================================================
 CREATE OR REPLACE FUNCTION handle_new_profile()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -204,6 +229,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
-CREATE OR REPLACE TRIGGER on_profile_created
+DROP TRIGGER IF EXISTS on_profile_created ON profiles;
+CREATE TRIGGER on_profile_created
   AFTER INSERT ON profiles
   FOR EACH ROW EXECUTE FUNCTION handle_new_profile();
