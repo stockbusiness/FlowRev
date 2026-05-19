@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:setup": "node scripts/setup-db.mjs"
+    "db:setup": "node scripts/setup-db.mjs",
+    "db:migrate": "node scripts/run-migration.mjs"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",
