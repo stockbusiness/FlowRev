@@ -16,6 +16,7 @@ import {
 } from "@/lib/supabase/dashboard";
 import { getReportData } from "@/lib/supabase/reports";
 import { buildDateRange } from "@/lib/report-utils";
+import { getBudgetsWithActual } from "@/lib/supabase/budgets";
 import type { ReportPreset } from "@/types/report";
 
 function calcChange(current: number, prev: number): { label: string; trend: "up" | "down" } {
@@ -48,12 +49,21 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 }
 
 async function DefaultDashboard() {
-  const [dbStats, monthlyData, expenseData, recentTransactions] = await Promise.all([
+  const currentMonth = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  })();
+
+  const [dbStats, monthlyData, expenseData, recentTransactions, budgets] = await Promise.all([
     getDashboardStats(),
     getMonthlyChartData(),
     getExpenseChartData(),
     getRecentTransactions(),
+    getBudgetsWithActual(currentMonth),
   ]);
+
+  const overBudget    = budgets.filter((b) => b.status === "over").map((b) => b.category_name);
+  const warningBudget = budgets.filter((b) => b.status === "warning").map((b) => b.category_name);
 
   const revenueChange  = calcChange(dbStats.currentRevenue,  dbStats.prevRevenue);
   const profitChange   = calcChange(dbStats.currentProfit,   dbStats.prevProfit);
@@ -81,6 +91,8 @@ async function DefaultDashboard() {
           revenue={dbStats.currentRevenue}
           expense={dbStats.currentExpense}
           transactionCount={dbStats.currentRevenue + dbStats.currentExpense > 0 ? 1 : 0}
+          overBudgetCategories={overBudget}
+          warningBudgetCategories={warningBudget}
         />
         <StatsGrid stats={stats} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

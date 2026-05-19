@@ -9,9 +9,15 @@ interface DashboardAlertsProps {
   revenue: number;
   expense: number;
   transactionCount: number;
+  overBudgetCategories?: string[];
+  warningBudgetCategories?: string[];
 }
 
-function computeAlerts({ revenue, expense, transactionCount }: DashboardAlertsProps): AlertItem[] {
+function computeAlerts({
+  revenue, expense, transactionCount,
+  overBudgetCategories = [],
+  warningBudgetCategories = [],
+}: DashboardAlertsProps): AlertItem[] {
   const alerts: AlertItem[] = [];
 
   if (transactionCount === 0) {
@@ -24,6 +30,14 @@ function computeAlerts({ revenue, expense, transactionCount }: DashboardAlertsPr
   } else if (revenue > 0 && expense / revenue >= 0.8) {
     const ratio = Math.round((expense / revenue) * 100);
     alerts.push({ type: "warning", message: `費用が売上の ${ratio}% に達しています。支出を見直しましょう。` });
+  }
+
+  if (overBudgetCategories.length > 0) {
+    alerts.push({ type: "error", message: `予算超過: ${overBudgetCategories.join("、")}` });
+  }
+
+  if (warningBudgetCategories.length > 0) {
+    alerts.push({ type: "warning", message: `予算の80%超過: ${warningBudgetCategories.join("、")}` });
   }
 
   if (revenue === 0 && expense > 0) {
