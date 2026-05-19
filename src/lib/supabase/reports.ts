@@ -75,5 +75,33 @@ export async function getReportData(
       ...val,
     }));
 
-  return { summary, categories, monthly };
+  // 顧客別売上ランキング Top10
+  const { data: custRows } = await supabase
+    .from("transactions")
+    .select("amount, customer:customers(id, name)")
+    .eq("type", "revenue")
+    .gte("date", dateFrom)
+    .lte("date", dateTo)
+    .not("customer_id", "is", null);
+
+  const custMap = new Map<string, { name: string; revenue: number; count: number }>();
+  for (const row of custRows ?? []) {
+    const cust = Array.isArray(row.customer) ? row.customer[0] : row.customer;
+    if (!cust) continue;
+    const prev = custMap.get(cust.id) ?? { name: cust.name, revenue: 0, count: 0 };
+    custMap.set(cust.id, { name: cust.name, revenue: prev.revenue + row.amount, count: prev.count + 1 });
+  }
+
+  const customerRanking = Array.from(custMap.entries())
+    .sort(([, a], [, b]) => b.revenue - a.revenue)
+    .slice(0, 10)
+    .map(([id, c]) => ({
+      customerId: id,
+      customerName: c.name,
+      revenue: c.revenue,
+      transactionCount: c.count,
+      percentage: revenue > 0 ? Math.round((c.revenue / revenue) * 100) : 0,
+    }));
+
+  return { summary, categories, monthly, customerRanking };
 }

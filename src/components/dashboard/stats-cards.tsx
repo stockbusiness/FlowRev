@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 interface StatCardProps {
   label: string;
   value: string;
-  change: string;
-  trend: "up" | "down";
+  change?: string;
+  trend?: "up" | "down";
   icon: LucideIcon;
 }
 
@@ -21,19 +21,21 @@ export function StatCard({ label, value, change, trend, icon: Icon }: StatCardPr
           </div>
         </div>
         <div className="text-2xl font-bold">{value}</div>
-        <div
-          className={cn(
-            "flex items-center gap-1 text-sm font-medium",
-            trend === "up" ? "text-emerald-600" : "text-rose-600"
-          )}
-        >
-          {trend === "up" ? (
-            <ArrowUp className="h-4 w-4" />
-          ) : (
-            <ArrowDown className="h-4 w-4" />
-          )}
-          <span>{change} 先月比</span>
-        </div>
+        {change && trend && (
+          <div
+            className={cn(
+              "flex items-center gap-1 text-sm font-medium",
+              trend === "up" ? "text-emerald-600" : "text-rose-600"
+            )}
+          >
+            {trend === "up" ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : (
+              <ArrowDown className="h-4 w-4" />
+            )}
+            <span>{change} 先月比</span>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

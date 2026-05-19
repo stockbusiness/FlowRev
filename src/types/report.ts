@@ -26,8 +26,17 @@ export interface ReportCategoryRow {
   percentage: number;
 }
 
+export interface CustomerRankingRow {
+  customerId: string;
+  customerName: string;
+  revenue: number;
+  transactionCount: number;
+  percentage: number;
+}
+
 export interface ReportData {
   summary: ReportSummary;
   categories: ReportCategoryRow[];
   monthly: { month: string; revenue: number; expense: number }[];
+  customerRanking: CustomerRankingRow[];
 }

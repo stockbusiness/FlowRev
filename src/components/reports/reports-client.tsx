@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { ReportFilterBar } from "./report-filter-bar";
 import { ReportSummaryCards } from "./report-summary-cards";
 import { ReportCategoryTable } from "./report-category-table";
+import { CustomerRankingTable } from "./customer-ranking-table";
+import { ReportCsvButton } from "./report-csv-button";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import type { ReportData, ReportFilters } from "@/types/report";
 
@@ -21,9 +23,7 @@ export function ReportsClient({ initialData, initialFilters }: ReportsClientProp
     if (!f.dateFrom || !f.dateTo) return;
     setLoading(true);
     try {
-      const res = await fetch(
-        `/api/reports?dateFrom=${f.dateFrom}&dateTo=${f.dateTo}`
-      );
+      const res = await fetch(`/api/reports?dateFrom=${f.dateFrom}&dateTo=${f.dateTo}`);
       if (res.ok) setData(await res.json());
     } finally {
       setLoading(false);
@@ -37,7 +37,6 @@ export function ReportsClient({ initialData, initialFilters }: ReportsClientProp
     }
   }
 
-  // カスタム選択で両日付が揃ったら自動フェッチ
   useEffect(() => {
     if (filters.preset === "custom" && filters.dateFrom && filters.dateTo) {
       fetchReport(filters);
@@ -47,7 +46,12 @@ export function ReportsClient({ initialData, initialFilters }: ReportsClientProp
 
   return (
     <div className="space-y-4">
-      <ReportFilterBar filters={filters} onChange={handleFilterChange} />
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex-1 min-w-0">
+          <ReportFilterBar filters={filters} onChange={handleFilterChange} />
+        </div>
+        <ReportCsvButton dateFrom={filters.dateFrom} dateTo={filters.dateTo} />
+      </div>
 
       <div className={loading ? "opacity-60 pointer-events-none" : ""}>
         <div className="space-y-4">
@@ -61,6 +65,8 @@ export function ReportsClient({ initialData, initialFilters }: ReportsClientProp
             <ReportCategoryTable categories={data.categories} type="revenue" />
             <ReportCategoryTable categories={data.categories} type="expense" />
           </div>
+
+          <CustomerRankingTable customers={data.customerRanking} />
         </div>
       </div>
     </div>
