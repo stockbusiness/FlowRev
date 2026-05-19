@@ -1,35 +1,39 @@
+import { DollarSign, TrendingUp, Users, ArrowDown } from "lucide-react";
 import { Header } from "@/components/layout/header";
-import { ArrowDown, ArrowUp, DollarSign, TrendingUp, Users } from "lucide-react";
+import { StatsGrid } from "@/components/dashboard/stats-cards";
+import { RevenueChart } from "@/components/dashboard/revenue-chart";
+import { ExpenseChart } from "@/components/dashboard/expense-chart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const stats = [
-  {
-    label: "月次売上",
-    value: "¥4,820,000",
-    change: "+12.5%",
-    trend: "up",
-    icon: DollarSign,
-  },
-  {
-    label: "純利益",
-    value: "¥1,240,000",
-    change: "+8.2%",
-    trend: "up",
-    icon: TrendingUp,
-  },
-  {
-    label: "アクティブ顧客",
-    value: "248",
-    change: "+4.1%",
-    trend: "up",
-    icon: Users,
-  },
-  {
-    label: "費用合計",
-    value: "¥3,580,000",
-    change: "-2.3%",
-    trend: "down",
-    icon: ArrowDown,
-  },
+  { label: "月次売上",    value: "¥4,820,000", change: "+12.5%", trend: "up"   as const, icon: DollarSign },
+  { label: "純利益",      value: "¥1,240,000", change: "+8.2%",  trend: "up"   as const, icon: TrendingUp },
+  { label: "アクティブ顧客", value: "248",      change: "+4.1%",  trend: "up"   as const, icon: Users },
+  { label: "費用合計",    value: "¥3,580,000", change: "-2.3%",  trend: "down" as const, icon: ArrowDown },
+];
+
+const monthlyData = [
+  { month: "12月", revenue: 3800000, expense: 2900000 },
+  { month: "1月",  revenue: 4100000, expense: 3100000 },
+  { month: "2月",  revenue: 3950000, expense: 3000000 },
+  { month: "3月",  revenue: 4300000, expense: 3200000 },
+  { month: "4月",  revenue: 4600000, expense: 3400000 },
+  { month: "5月",  revenue: 4820000, expense: 3580000 },
+];
+
+const expenseData = [
+  { name: "人件費",   value: 1800000, color: "#ef4444" },
+  { name: "家賃",     value: 600000,  color: "#f97316" },
+  { name: "広告費",   value: 480000,  color: "#eab308" },
+  { name: "消耗品費", value: 420000,  color: "#6b7280" },
+  { name: "その他",   value: 280000,  color: "#9ca3af" },
+];
+
+const recentActivity = [
+  { text: "新規契約：株式会社サンプル A", time: "2時間前" },
+  { text: "請求書発行 #INV-0042",       time: "5時間前" },
+  { text: "入金確認 ¥320,000",          time: "昨日" },
+  { text: "費用登録：オフィス賃料",      time: "昨日" },
 ];
 
 export default function DashboardPage() {
@@ -37,59 +41,19 @@ export default function DashboardPage() {
     <>
       <Header title="ダッシュボード" />
       <main className="flex-1 overflow-auto p-6 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="bg-card rounded-xl border p-5 space-y-3"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  {stat.label}
-                </span>
-                <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <stat.icon className="h-5 w-5 text-primary" />
-                </div>
-              </div>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <div
-                className={`flex items-center gap-1 text-sm font-medium ${
-                  stat.trend === "up"
-                    ? "text-emerald-600"
-                    : "text-rose-600"
-                }`}
-              >
-                {stat.trend === "up" ? (
-                  <ArrowUp className="h-4 w-4" />
-                ) : (
-                  <ArrowDown className="h-4 w-4" />
-                )}
-                <span>{stat.change} 先月比</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
+        <StatsGrid stats={stats} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-card rounded-xl border p-6">
-            <h2 className="text-base font-semibold mb-4">収益トレンド</h2>
-            <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
-              グラフはここに表示されます
-            </div>
-          </div>
-          <div className="bg-card rounded-xl border p-6">
-            <h2 className="text-base font-semibold mb-4">最近のアクティビティ</h2>
-            <div className="space-y-3">
-              {[
-                { text: "新規契約：株式会社サンプル A", time: "2時間前" },
-                { text: "請求書発行 #INV-0042", time: "5時間前" },
-                { text: "入金確認 ¥320,000", time: "昨日" },
-                { text: "費用登録：オフィス賃料", time: "昨日" },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between py-2 border-b last:border-0"
-                >
+          <RevenueChart data={monthlyData} />
+          <ExpenseChart data={expenseData} />
+        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">最近のアクティビティ</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="divide-y">
+              {recentActivity.map((item, i) => (
+                <div key={i} className="flex items-center justify-between py-3">
                   <span className="text-sm">{item.text}</span>
                   <span className="text-xs text-muted-foreground shrink-0 ml-4">
                     {item.time}
@@ -97,8 +61,8 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </main>
     </>
   );

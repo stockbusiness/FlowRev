@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { BarChart3, Home, RefreshCw, Settings, TrendingUp } from "lucide-react";
+import { ArrowLeftRight, BarChart3, Home, RefreshCw, Settings, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/dashboard", label: "概要", icon: Home },
-  { href: "/dashboard/analytics", label: "収益分析", icon: BarChart3 },
-  { href: "/dashboard/flows", label: "フロー管理", icon: RefreshCw },
-  { href: "/dashboard/reports", label: "レポート", icon: TrendingUp },
-  { href: "/dashboard/settings", label: "設定", icon: Settings },
+  { href: "/dashboard",              label: "概要",    icon: Home },
+  { href: "/dashboard/transactions", label: "取引管理", icon: ArrowLeftRight },
+  { href: "/dashboard/analytics",    label: "収益分析", icon: BarChart3 },
+  { href: "/dashboard/flows",        label: "フロー管理", icon: RefreshCw },
+  { href: "/dashboard/reports",      label: "レポート", icon: TrendingUp },
+  { href: "/dashboard/settings",     label: "設定",    icon: Settings },
 ];
 
 export function Sidebar() {
