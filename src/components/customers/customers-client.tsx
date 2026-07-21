@@ -8,10 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomerList } from "./customer-list";
 import { CustomerForm } from "./customer-form";
 import type { Customer } from "@/types";
-import type { CustomerFormValues } from "@/types/customer";
+import type { CustomerFormValues, CustomerWithStats } from "@/types/customer";
 
 interface CustomersClientProps {
-  initialCustomers: Customer[];
+  initialCustomers: CustomerWithStats[];
 }
 
 export function CustomersClient({ initialCustomers }: CustomersClientProps) {
